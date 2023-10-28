@@ -19,25 +19,43 @@ struct FnDef {
 }
 
 struct TreeNode {
-	children: Vec<TreeNode>,
+    children: Vec<TreeNode>,
 }
 
-fn draw<'a>(tokens: &'a [String], ptr: &mut usize) {
-	let tok = tokens[*ptr];
-	*ptr+=1;
-	if tok == "fn" {
-		
-	}
+fn next_tok<'a>(tokens: &'a [String], ptr: &mut usize) -> &'a String {
+    *ptr += 1;
+    &tokens[*ptr - 1]
 }
 
-fn draw_many<'a>(tokens: &'a [String], ptr: &mut usize, count: usize) {
+fn draw(tokens: &[String], ptr: &mut usize, fns: &mut Vec<HashMap<String, FnDef>>) {
+    let tok = next_tok(tokens, ptr);
+    if tok == "fn" {
+        let fn_name = next_tok(tokens, ptr);
+        let argc = usize::from_str_radix(next_tok(tokens, ptr), 10).unwrap();
+        fns.last_mut().unwrap().insert(
+            fn_name.clone(),
+            FnDef {
+                start: *ptr + 1,
+                argc,
+            },
+        );
+        fns.push(HashMap::new());
+    }
+}
+
+fn draw_many(
+    tokens: &[String],
+    ptr: &mut usize,
+    count: usize,
+    fns: &mut Vec<HashMap<String, FnDef>>,
+) {
     for i in 0..count {
-		draw(tokens, ptr);
-	}
+        draw(tokens, ptr, fns);
+    }
 }
 
 fn main() {
-    let content = fs::read("./source.cat").unwrap();
+    let content = fs::read("./source.src").unwrap();
     let s = match str::from_utf8(&content) {
         Ok(v) => v,
         Err(e) => panic!("Invalid UTF-8 sequence: {e}"),
@@ -78,12 +96,10 @@ fn main() {
     println!("{tokens:?}");
 
     let mut ptr = 0;
-    let mut fn_stack: Vec<HashMap<String, FnDef>>;
-	let mut tree: TreeNode;
-    while ptr < tokens.len() { // treeification
-        let tok = &draw(&tokens, &mut ptr, 1)[0];
-		if tok == "fn" {
-			let fn_name = 
-		}
+    let mut fn_stack: Vec<HashMap<String, FnDef>> = vec![HashMap::new()];
+    let mut tree: TreeNode;
+    while ptr < tokens.len() {
+        // treeification
+        &draw_many(&tokens, &mut ptr, 1, &mut fn_stack);
     }
 }
