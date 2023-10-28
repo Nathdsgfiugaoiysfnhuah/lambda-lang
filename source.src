@@ -5,7 +5,7 @@ fn sum 1 do 6 / arg1: [num] /
 	set counter 0
 	set sum 0
 	fn cond 2 / arg1: num, arg2: num /
-		equal comp arg1 arg2 -1
+		comp comp arg1 arg2 -1
 	fn body 2 / arg1: &num, arg2: num, arg3: [num] /
 		set arg1 add val arg1 index arg3 arg2
 	while / &fn condition, num argc, &.. args + body - same /
