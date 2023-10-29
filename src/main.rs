@@ -31,6 +31,7 @@ enum Instruction {
     ARR,
     SET,
     REF,
+	VAL,
     PRINT,
 }
 
@@ -102,6 +103,10 @@ fn draw(
         }
         "ref" => {
             compiled.push(ByteCodePoint::c(Instruction::REF));
+            draw(tokens, ptr, fns, compiled);
+        }
+		"val" => {
+            compiled.push(ByteCodePoint::c(Instruction::VAL));
             draw(tokens, ptr, fns, compiled);
         }
         "print" => {

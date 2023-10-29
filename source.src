@@ -1,2 +1,4 @@
 fn trimul 3 mul mul arg1 arg2 arg3
-print trimul 2 3 4
+/ we have trimul, for \\\\ when we want 3 muls, to test mul mul arr div sub 1 2 3 4.124 comment \\/ /\/ /
+
+/ \\/ print trimul 2 3 4
