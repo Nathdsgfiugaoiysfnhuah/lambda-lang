@@ -21,11 +21,13 @@ struct FnDef {
 #[derive(Debug)]
 enum Instruction {
     SUB,
+    ADD,
     DIV,
+	MUL,
     CALL, // adr, argc, ...
-    RET, // jump to last call
-    CMP, // a, b => {-1,0,1} : {< = >}
-    JZ,  // cond, adr
+    RET,  // jump to last call
+    CMP,  // a, b => {-1,0,1} : {< = >}
+    JZ,   // cond, adr
     ARR,
     SET,
     REF,
@@ -59,8 +61,8 @@ fn draw(
             compiled.push(ByteCodePoint::c(Instruction::JZ));
             compiled.insert(compiled.len(), ByteCodePoint::i(0));
             let target = compiled.len();
-			let goal = compiled.len() + 1;
-			println!("{goal:?}");
+            let goal = compiled.len() + 1;
+            println!("{goal:?}");
             fns.last_mut().unwrap().insert(
                 fn_name.clone(),
                 FnDef {
@@ -78,17 +80,25 @@ fn draw(
             compiled.push(ByteCodePoint::c(Instruction::SUB));
             draw_many(tokens, ptr, 2, fns, compiled);
         }
+		"add" => {
+            compiled.push(ByteCodePoint::c(Instruction::ADD));
+            draw_many(tokens, ptr, 2, fns, compiled);
+        }
         "div" => {
             compiled.push(ByteCodePoint::c(Instruction::DIV));
             draw_many(tokens, ptr, 2, fns, compiled);
         }
+		"mul" => {
+            compiled.push(ByteCodePoint::c(Instruction::MUL));
+            draw_many(tokens, ptr, 2, fns, compiled);
+        }
         "do" => {
-            let count = next_tok(tokens, ptr).parse().unwrap();
+            let count = next_tok(tokens, ptr).parse().unwrap(); // consider some kind of support for arbitrary do? i'm not sure it really makes sense though.
             draw_many(tokens, ptr, count, fns, compiled);
         }
         "set" => {
             compiled.push(ByteCodePoint::c(Instruction::SET));
-            draw(tokens, ptr, fns, compiled); // get the value for it, does this even work though?
+            draw_many(tokens, ptr, 2, fns, compiled); // get the value for it, does this even work though?
         }
         "ref" => {
             compiled.push(ByteCodePoint::c(Instruction::REF));
@@ -97,6 +107,15 @@ fn draw(
         "print" => {
             compiled.push(ByteCodePoint::c(Instruction::PRINT));
             draw(tokens, ptr, fns, compiled);
+        }
+        "arr" => {
+            compiled.push(ByteCodePoint::c(Instruction::ARR));
+            let count = next_tok(tokens, ptr).parse().unwrap();
+            draw_many(tokens, ptr, count, fns, compiled);
+        }
+        "comp" => {
+            compiled.push(ByteCodePoint::c(Instruction::CMP));
+            draw_many(tokens, ptr, 2, fns, compiled);
         }
         _ => {
             let mut argc: Option<&FnDef> = None;
@@ -110,9 +129,9 @@ fn draw(
                 }
             }
             if let Some(def) = argc {
-				compiled.push(ByteCodePoint::c(Instruction::CALL));
-				compiled.push(ByteCodePoint::i(def.start as i64));
-				compiled.push(ByteCodePoint::i(def.argc as i64));
+                compiled.push(ByteCodePoint::c(Instruction::CALL));
+                compiled.push(ByteCodePoint::i(def.start as i64));
+                compiled.push(ByteCodePoint::i(def.argc as i64));
                 draw_many(tokens, ptr, def.argc, fns, compiled);
                 return;
             }
@@ -124,7 +143,7 @@ fn draw(
                 compiled.push(ByteCodePoint::f(val));
                 return;
             }
-			println!("{tok:?}");
+            println!("{tok:?}");
             compiled.push(ByteCodePoint::s(tok.to_string()));
         }
     }
